@@ -28,65 +28,27 @@
 static bool s_Running = true;
 static std::mutex s_InputMutex;
 
-struct InputData
-{
-	char LastInput = 0;
-
-	InputData(char ch = 0) : LastInput(ch) {}
-
-	operator bool() const
-	{
-		return LastInput;
-	}
-
-	operator char() const
-	{
-		return LastInput;
-	}
-};
-
 struct Vec2
 {
 	float x, y;
 	Vec2() : x(0.f), y(0.f) {}
 	Vec2(float x, float y) : x(x), y(y) {}
 
-	Vec2 operator+(const Vec2& other) const
-	{
-		return Vec2(x + other.x, y + other.y);
-	}
+	Vec2 operator+(const Vec2& other) const { return Vec2(x + other.x, y + other.y); }
 
-	Vec2 operator-(const Vec2& other) const
-	{
-		return Vec2(x - other.x, y - other.y);
-	}
+	Vec2 operator-(const Vec2& other) const	{ return Vec2(x - other.x, y - other.y); }
 
-	Vec2 operator-() const
-	{
-		return Vec2(-x, -y);
-	}
+	Vec2 operator-() const { return Vec2(-x, -y); }
 
-	Vec2 operator*(const Vec2& other) const
-	{
-		return Vec2(x * other.x, y * other.y);
-	}
+	Vec2 operator*(const Vec2& other) const { return Vec2(x * other.x, y * other.y); }
 
-	Vec2 operator/(const Vec2& other) const
-	{
-		return Vec2(x / other.x, y / other.y);
-	}
+	Vec2 operator/(const Vec2& other) const { return Vec2(x / other.x, y / other.y); }
 
-	Vec2 operator*(float a) const
-	{
-		return Vec2(x * a, y * a);
-	}
+	Vec2 operator*(float a) const { return Vec2(x * a, y * a); }
 
-	Vec2 operator/(float a) const
-	{
-		return Vec2(x / a, y / a);
-	}
+	Vec2 operator/(float a) const { return Vec2(x / a, y / a); }
 
-	Vec2& operator+=(const Vec2& other)
+	Vec2& operator+=(const Vec2& other) 
 	{
 		x += other.x;
 		y += other.y;
@@ -128,49 +90,7 @@ struct Vec2
 		return *this;
 	}
 
-	bool operator==(const Vec2& other) const
-	{
-		return x == other.x && y == other.y;
-	}
-};
-
-class Timer
-{
-public:
-	Timer()
-	{
-		Reset();
-	}
-
-	void Reset()
-	{
-		mStart = std::chrono::high_resolution_clock::now();
-	}
-
-	float Elapsed()
-	{
-		return (float)(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - mStart).count() * 1e-9);
-	}
-
-	float ElapsedMilli()
-	{
-
-		return (float)(Elapsed() * 1e3);
-	}
-
-private:
-	std::chrono::time_point<std::chrono::high_resolution_clock> mStart;
-};
-
-class Time
-{
-public:
-	static float GetTime() { return sAppTimer.Elapsed(); }
-	static float GetTimeMilli() { return sAppTimer.ElapsedMilli(); }
-	static void Reset() { sAppTimer.Reset(); }
-
-private:
-	static inline Timer sAppTimer;
+	bool operator==(const Vec2& other) const { return x == other.x && y == other.y; }
 };
 
 struct Snake
@@ -181,6 +101,7 @@ struct Snake
 	Snake(const Vec2& position = Vec2(9.f, 9.f), const Vec2& direction = Vec2(1.f, 0.f))
 		: Direction(direction)
 	{
+		// initial size = 2 (1 head, 1 tail)
 		parts.push_back(position + direction);
 		parts.push_back(position);
 	}
@@ -189,22 +110,30 @@ struct Snake
 
 	void Grow()
 	{
+		// set new part to be same as tail
+		// it will be changed when the snake moves
 		parts.push_back(parts.back());
 	}
 
 	bool ChangeDir(const Vec2& dir)
 	{
+		// if player tries to reverse direction
+		// ignore it
 		if (parts[0] + dir == parts[1])
 			return false;
+
 		Direction = dir;
 		return true;
 	}
 
 	void Move(float x_max = WIDTH, float y_max = HEIGHT)
 	{
+		// shift all parts 1 step back (1 = 0, 2 = 1, 3 = 2, .... )
 		std::memmove(&parts[1], &parts[0], (parts.size() - 1) * sizeof(Vec2));
+		// move the first part (head) by direction
 		auto& part = (parts[0] += Direction);
 
+		// loop back around if head goes out of map
 		if (part.x >= WIDTH)
 			part.x = 0.f;
 		else if (part.x < 0.f)
@@ -215,13 +144,9 @@ struct Snake
 		else if (part.y < 0.f)
 			part.y = HEIGHT - 1.f;
 	}
-	
-	size_t size() const
-	{
-		return parts.size();
-	}
 };
 
+// used to decide fruit location
 static std::random_device rd;
 static std::mt19937 engine(rd());
 static std::uniform_int_distribution<int32_t> dist(0, 19);
@@ -233,50 +158,64 @@ struct Level
 
 	Level()
 	{
+		// set a random location for fruit on startup
 		MoveFruit();
 
 	}
 
 	void MoveFruit()
 	{
-		fruit = Vec2((float)dist(engine), (float)dist(engine));
+		// check if fruit is on a valid tile ( not on a tile with snake part )
+		std::vector<Vec2> tiles;
+		for (size_t i = 0; i < HEIGHT; i++)
+			for (size_t j = 0; j < WIDTH; j++)
+				tiles.push_back(Vec2((float)i, (float)j));
+
+		// remove all tiles with snake parts
+		for (auto& part : player.parts)
+		{
+			auto it = std::find(tiles.begin(), tiles.end(), part);
+			if (it != tiles.end())
+				tiles.erase(it);
+		}
+
+		// if there are no valid tiles
+		// player won ?
+		if (tiles.empty())
+		{
+			std::cout << "Game Won...." << std::endl << std::endl;
+			// acquire lock because s_Running is used by input_thread
+			std::scoped_lock<std::mutex> lock(s_InputMutex);
+			s_Running = false;
+		}
+		else
+		{
+			// choose a random tile from the valid tiles
+			std::uniform_int_distribution<int32_t> idx(0, (int32_t)tiles.size() - 1);
+			int32_t index = idx(engine);
+			fruit = tiles[index];
+		}
 	}
 
 	void Update()
 	{
 		player.Move();
+		// if player ate fruit
 		if (player.Head() == fruit)
 		{
 			player.Grow();
 			MoveFruit();
-			std::vector<Vec2> tiles;
-			for (size_t i = 0; i < HEIGHT; i++)
-				for (size_t j = 0; j < WIDTH; j++)
-					tiles.push_back(Vec2((float)i, (float)j));
-
-			for (auto& part : player.parts)
-			{
-				auto it = std::find(tiles.begin(), tiles.end(), part);
-				if (it != tiles.end())
-					tiles.erase(it);
-			}
-
-			auto it = std::find(tiles.begin(), tiles.end(), fruit);
-			if (it == tiles.end())
-			{
-				std::uniform_int_distribution<int32_t> idx(0, (int32_t)tiles.size() - 1);
-				int32_t index = idx(engine);
-				fruit = tiles[index];
-			}
 		}
 		else
 		{
+			// check if player ran into snake part
 			for (auto it = player.parts.begin() + 1; it != player.parts.end(); ++it)
 			{
 				auto& part = *it;
 				if (part == player.Head())
 				{
 					std::cout << "Game Over...." << std::endl << std::endl;
+					// acquire lock because s_Running is used by input_thread
 					std::scoped_lock<std::mutex> lock(s_InputMutex);
 					s_Running = false;
 				}
@@ -330,38 +269,43 @@ struct Screen
 		if (snake.parts.empty())
 			return;
 
-		scr[(size_t)snake.parts[0].y][(size_t)snake.parts[0].x] = SNAKE_HEAD;
 
 		for (auto it = snake.parts.begin() + 1; it != snake.parts.end(); ++it)
 		{
 			auto& part = *it;
-#ifndef NDEBUG
-			if (part.x > width || part.x < 0 || part.y > height || part.y < 0)
-				DEBUG_BREAK;
-#endif
 			scr[(size_t)part.y][(size_t)part.x] = SNAKE_BODY;
 		}
+		// draw head last so it shows up when player runs into snake
+		scr[(size_t)snake.parts[0].y][(size_t)snake.parts[0].x] = SNAKE_HEAD;
 	}
 
 	void Draw(const Vec2& fruit)
 	{
 		scr[(size_t)fruit.y][(size_t)fruit.x] = FRUIT;
 	}
+
+	void Draw(const Level& level)
+	{
+		Draw(level.player);
+		Draw(level.fruit);
+	}
 };
 
-static InputData s_InputData;
+static char s_InputData;
 static Level s_Level;
 static Screen s_Screen;
 
 void poll_events()
 {
+	// acquire lock because 's_InputData' is updated by a different thread
 	std::scoped_lock<std::mutex> lock(s_InputMutex);
 
 	if (!s_InputData)
 		return;
 
-	s_Running = (s_InputData.LastInput != 'q');
-	switch (s_InputData.LastInput)
+	// controls the lifetime of application and input thread
+	s_Running = (s_InputData != 'q');
+	switch (s_InputData)
 	{
 	case 'w':
 		s_Level.player.ChangeDir(Vec2(0.f, -1.f));
@@ -380,11 +324,13 @@ void poll_events()
 	s_InputData = 0;
 }
 
+// run on a separate thread
 void T_ReadInput()
 {
 	std::unique_lock<std::mutex> lock(s_InputMutex);
 	while (s_Running)
 	{
+		// release mutex when we are checking for input
 		lock.unlock();
 		char ch = 0;
 		if (GetAsyncKeyState(VK_UP))
@@ -397,43 +343,42 @@ void T_ReadInput()
 			ch = 'd';
 		else if (GetAsyncKeyState(VK_ESCAPE))
 			ch = 'q';
+
+		// re acquire lock when we setting input and also checking 's_Running' for next loop
 		lock.lock();
-		s_InputData.LastInput = ch;
+		if (ch)
+			s_InputData = ch;
 	}
 }
 
+// called once every second
 void update()
 {
 	system(CLR_STR);
 	s_Screen.Clear('*');
 	s_Level.Update();
-	s_Screen.Draw(s_Level.player);
-	s_Screen.Draw(s_Level.fruit);
+	s_Screen.Draw(s_Level);
 	s_Screen.Print();
+
 	std::cout << std::endl << "Score: " << s_Level.player.parts.size() - 1 << std::endl;
 }
 
 int main()
 {
+	// separate input reading into separate thread 
+	// so that we can constantly read input
+	// instead of checking input every 1 second
 	std::thread input_thread(T_ReadInput);
-
-	float last_time = Time::GetTime(), cur_time = Time::GetTime();
-	float acc = 0.f;
 
 	while (s_Running)
 	{
-		last_time = cur_time;
-		cur_time = Time::GetTime();
-		float delta = cur_time - last_time;
-		acc += delta;
-
-		if (acc >= 1.f)
-		{
-			acc = 0.f;
-			update();
-		}
-
+		// check if there was any input and
+		// react to it
 		poll_events();
+		update();
+
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(1000ms);
 	}
 
 	input_thread.join();

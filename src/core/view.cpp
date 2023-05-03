@@ -5,8 +5,18 @@ namespace Core
 	View::View(const Math::Vec2i& viewExtent) 
 		: m_ViewExtent(viewExtent)
 	{
-		m_View.resize(viewExtent.x * viewExtent.y, 0);
+		m_View.resize(viewExtent.x);
+		for (auto& v : m_View)
+			v.resize(viewExtent.y);
 	}
+	
+	void View::Clear(char clearChar)
+	{
+		for (auto& v : m_View)
+			for (auto& c : v)
+				c = clearChar;
+	}
+
 	void View::Draw(const Sprite& sprite, const Math::Vec2i& position)
 	{
 		int32_t px = position.x, py = position.y, sx = sprite.GetWidth(), sy = sprite.GetHeight();
@@ -21,7 +31,6 @@ namespace Core
 
 		for (int32_t x = px; x < pxmax; x++)
 			for (int32_t y = py; y < pymax; y++)
-				// this[y][x] because of how we are indexing the array
 				(*this)[y][x] = sprite[x - px][y - py];
 	}
 

@@ -1,5 +1,7 @@
 #include "screen.h"
 
+#include <iostream>
+
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
@@ -32,6 +34,16 @@ namespace Utils
         t = (t + 1.f) / 2.f;
         return v2 * t + (1.f - t) * v1;
     }
+
+    void SetCursorPos(const Math::Vec2i& position)
+    {
+#if defined(_WIN32)
+        COORD pos = { (SHORT)position.x, (SHORT)position.y };
+        HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleCursorPosition(output, pos);
+#elif defined(__linux__)
+#endif // Windows/Linux
+    }
 }
 
 namespace Core
@@ -39,6 +51,7 @@ namespace Core
     Screen::Screen()
     {
         m_ScreenExtent = Utils::get_terminal_size();
+        UpdateViewSize();
     }
     
     Screen::~Screen()
@@ -48,10 +61,22 @@ namespace Core
     void Screen::OnUpdate(float ts)
     {
         m_ScreenExtent = Utils::get_terminal_size();
+        UpdateViewSize();
     }
 
-    void Screen::Draw(const View& view)
+    void Screen::FlushView()
     {
+        for (int32_t j = 0; j < m_View->GetHeight(); j++)
+        {
+            for (int32_t i = 0; i < m_View->GetWidth(); i++)
+            {
+                if (((*m_View)[i][j]) != ((*m_OldView)[i][j]))
+                {
+                    Utils::SetCursorPos({ i, j });
+                    std::cout << (*m_View)[i][j];
+                }
+            }
+        }
     }
     
     float Screen::GetAspectRatio() const
@@ -76,5 +101,31 @@ namespace Core
     {
         float x = ((float)vector.x / (float)m_ScreenExtent.x) * 2.f - 1.f, y = ((float) vector.y / (float)m_ScreenExtent.y) * 2.f - 1.f;
         return Math::Vec2f(x, y);
+    }
+    
+    void Screen::UpdateViewSize()
+    {
+        m_View = std::make_shared<View>(m_ScreenExtent);
+    }
+    
+    View& Screen::PrepareView()
+    {
+        // store previous buffer so the we can change only the characters
+        // that are different to make the experience smooth
+        m_OldView = std::make_shared<View>(*m_View);
+        m_View->Clear();
+        return *m_View;
+    }
+    
+    void Screen::ClearScreen()
+    {
+        Utils::SetCursorPos({ 0, 0 });
+        for (int32_t j = 0; j < m_View->GetHeight(); j++)
+        {
+            for (int32_t i = 0; i < m_View->GetWidth(); i++)
+            {
+                std::cout << ' ';
+            }
+        }
     }
 }

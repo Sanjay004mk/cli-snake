@@ -19,8 +19,8 @@ namespace Core
 		std::vector<char>& operator[](int32_t i) { return data[i]; }
 		const std::vector<char>& operator[](int32_t i) const { return data[i]; }
 
-		int32_t GetWidth() const { return (int32_t)data[0].size(); }
-		int32_t GetHeight() const { return (int32_t)data.size(); }
+		int32_t GetWidth() const { return (int32_t)data.size(); }
+		int32_t GetHeight() const { return (int32_t)data[0].size(); }
 		Math::Vec2i GetExtent() const { return { GetWidth(), GetHeight() }; }
 
 		std::vector<std::vector<char>> data;
@@ -31,16 +31,18 @@ namespace Core
 	public:
 		View(const Math::Vec2i& viewExtent);
 
+		void Clear(char clearChar = ' ');
 		void Draw(const Sprite& sprite, const Math::Vec2i& top_left_position);
 
 		const Math::Vec2i& GetExtent() const { return m_ViewExtent; }
 		const int32_t GetWidth() const { return m_ViewExtent.x; }
 		const int32_t GetHeight() const { return m_ViewExtent.y; }
 
-		char* operator[](int32_t i) { return &m_View[i * m_ViewExtent.x]; }
+		std::vector<char>& operator[](int32_t i) { return m_View[i]; }
+		const std::vector<char>& operator[](int32_t i) const { return m_View[i]; }
 
 	private:
 		Math::Vec2i m_ViewExtent = {};
-		std::vector<char> m_View = {};
+		std::vector<std::vector<char>> m_View = {};
 	};
 }

@@ -12,12 +12,24 @@
 
 namespace Utils
 {
-    static Math::Vec2i get_terminal_size() 
+    struct ConsoleData
+    {
+#if defined(_WIN32)
+        HANDLE stdOutHandle = 0;
+#elif defined(__linux__)
+
+#endif // Windows/Linux
+        Math::Vec2i consoleSize = {};
+    };
+
+    static ConsoleData s_Data;
+
+    static Math::Vec2i UpdateConsoleSize()
     {
         Math::Vec2i size;
 #if defined(_WIN32)
         CONSOLE_SCREEN_BUFFER_INFO csbi;
-        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+        GetConsoleScreenBufferInfo(s_Data.stdOutHandle, &csbi);
         size.x = (int32_t)(csbi.srWindow.Right - csbi.srWindow.Left + 1);
         size.y = (int32_t)(csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
 #elif defined(__linux__)
@@ -26,23 +38,32 @@ namespace Utils
         size.x = (int32_t)(w.ws_col);
         size.y = (int32_t)(w.ws_row);
 #endif // Windows/Linux
-        return size;
+        return s_Data.consoleSize = size;
     }
 
-    float LerpN1to1(float t, float v1, float v2)
+    static Math::Vec2i GetConsoleSize()
     {
-        t = (t + 1.f) / 2.f;
-        return v2 * t + (1.f - t) * v1;
+        return s_Data.consoleSize;
     }
 
-    void SetCursorPos(const Math::Vec2i& position)
+    static void SetCursorPos(const Math::Vec2i& position)
     {
 #if defined(_WIN32)
         COORD pos = { (SHORT)position.x, (SHORT)position.y };
-        HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleCursorPosition(output, pos);
+        SetConsoleCursorPosition(s_Data.stdOutHandle, pos);
 #elif defined(__linux__)
+
 #endif // Windows/Linux
+    }
+
+    static void InitData()
+    {
+#if defined(_WIN32)
+        s_Data.stdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+#elif defined(__linux__)
+
+#endif // Windows/Linux
+        UpdateConsoleSize();
     }
 }
 
@@ -50,7 +71,8 @@ namespace Core
 {
     Screen::Screen()
     {
-        m_ScreenExtent = Utils::get_terminal_size();
+        Utils::InitData();
+        m_ScreenExtent = Utils::GetConsoleSize();
         UpdateViewSize();
     }
     
@@ -60,7 +82,7 @@ namespace Core
 
     void Screen::OnUpdate(float ts)
     {
-        m_ScreenExtent = Utils::get_terminal_size();
+        m_ScreenExtent = Utils::UpdateConsoleSize();
         UpdateViewSize();
     }
 
@@ -81,26 +103,17 @@ namespace Core
     
     float Screen::GetAspectRatio() const
     {
-        return (float)m_ScreenExtent.x / (float)m_ScreenExtent.y;
+        return m_View->GetAspectRatio();
     }
     
     Math::Vec2i Screen::WorldSpaceToScreenSpace(const Math::Vec2f& v) const
     {
-        // convert to (-1, -1) -> (1, 1) 
-        auto vector = v;
-        float aspectRatio = GetAspectRatio();
-        if (aspectRatio > 1.f)
-            vector.x /= aspectRatio;
-        else
-            vector.y *= aspectRatio;
-
-        return Math::Vec2i((int32_t)Utils::LerpN1to1(vector.x, 0.f, (float)m_ScreenExtent.x), (int32_t)Utils::LerpN1to1(vector.y, 0.f, (float)m_ScreenExtent.y));
+        return m_View->WorldSpaceToScreenSpace(v);
     }
 
     Math::Vec2f Screen::ScreenSpaceToWorldSpace(const Math::Vec2i& vector) const
     {
-        float x = ((float)vector.x / (float)m_ScreenExtent.x) * 2.f - 1.f, y = ((float) vector.y / (float)m_ScreenExtent.y) * 2.f - 1.f;
-        return Math::Vec2f(x, y);
+        return m_View->ScreenSpaceToWorldSpace(vector);
     }
     
     void Screen::UpdateViewSize()

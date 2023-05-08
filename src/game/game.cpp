@@ -25,7 +25,7 @@ namespace Game
 		};
 		
 		Core::View& view = screen.PrepareView();
-		view.Draw(player, { 0, 0 });
+		view.Draw(player, Math::Vec2f(1.f, (1.f - 3.f * (1.f / 15.f))));
 
 		screen.FlushView();
 	}

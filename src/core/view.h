@@ -33,10 +33,16 @@ namespace Core
 
 		void Clear(char clearChar = ' ');
 		void Draw(const Sprite& sprite, const Math::Vec2i& top_left_position);
+		void Draw(const Sprite& sprite, const Math::Vec2f& world_position);
 
 		const Math::Vec2i& GetExtent() const { return m_ViewExtent; }
 		const int32_t GetWidth() const { return m_ViewExtent.x; }
 		const int32_t GetHeight() const { return m_ViewExtent.y; }
+
+		float GetAspectRatio() const;
+
+		Math::Vec2i WorldSpaceToScreenSpace(const Math::Vec2f& vector) const;
+		Math::Vec2f ScreenSpaceToWorldSpace(const Math::Vec2i& vector) const;
 
 		std::vector<char>& operator[](int32_t i) { return m_View[i]; }
 		const std::vector<char>& operator[](int32_t i) const { return m_View[i]; }

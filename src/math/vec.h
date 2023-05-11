@@ -57,6 +57,57 @@ namespace Math
 	}
 
 	template <size_t L, typename T>
+	Vector<L, T> operator*(const Vector<L, T>& left, const Vector<L, T>& right)
+	{
+		Vector<L, T> res;
+		for (size_t i = 0; i < L; i++)
+			res.e[i] = left.e[i] * right.e[i];
+		return res;
+	}
+
+	template <size_t L, typename T>
+	Vector<L, T> operator*(const Vector<L, T>& vector, float scalar)
+	{
+		Vector<L, T> res;
+		for (size_t i = 0; i < L; i++)
+			res.e[i] = vector.e[i] * scalar;
+		return res;
+	}
+
+	template <size_t L, typename T>
+	Vector<L, T> operator/(const Vector<L, T>& left, const Vector<L, T>& right)
+	{
+		Vector<L, T> res;
+		for (size_t i = 0; i < L; i++)
+			res.e[i] = left.e[i] / right.e[i];
+		return res;
+	}
+
+	template <size_t L, typename T>
+	Vector<L, T>& operator*=(Vector<L, T>& res, const Vector<L, T>& other)
+	{
+		for (size_t i = 0; i < L; i++)
+			res.e[i] *= other.e[i];
+		return res;
+	}
+
+	template <size_t L, typename T>
+	Vector<L, T>& operator*=(Vector<L, T>& res, float sc)
+	{
+		for (size_t i = 0; i < L; i++)
+			res.e[i] *= sc;
+		return res;
+	}
+
+	template <size_t L, typename T>
+	Vector<L, T>& operator/=(Vector<L, T>& res, const Vector<L, T>& other)
+	{
+		for (size_t i = 0; i < L; i++)
+			res.e[i] /= other.e[i];
+		return res;
+	}
+
+	template <size_t L, typename T>
 	bool operator==(const Vector<L, T>& left, const Vector<L, T>& right)
 	{
 		for (size_t i = 0; i < L; i++)

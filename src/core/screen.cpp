@@ -3,11 +3,15 @@
 #include <iostream>
 
 #if defined(_WIN32)
+
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #include <Windows.h>
+
 #elif defined(__linux__)
+
 #include <sys/ioctl.h>
+
 #endif // Windows/Linux
 
 namespace Utils
@@ -15,10 +19,13 @@ namespace Utils
     struct ConsoleData
     {
 #if defined(_WIN32)
+
         HANDLE stdOutHandle = 0;
+
 #elif defined(__linux__)
 
 #endif // Windows/Linux
+
         Math::Vec2i consoleSize = {};
     };
 
@@ -28,16 +35,21 @@ namespace Utils
     {
         Math::Vec2i size;
 #if defined(_WIN32)
+
         CONSOLE_SCREEN_BUFFER_INFO csbi;
         GetConsoleScreenBufferInfo(s_Data.stdOutHandle, &csbi);
         size.x = (int32_t)(csbi.srWindow.Right - csbi.srWindow.Left + 1);
         size.y = (int32_t)(csbi.srWindow.Bottom - csbi.srWindow.Top + 1);
+
 #elif defined(__linux__)
+
         struct winsize w;
         ioctl(fileno(stdout), TIOCGWINSZ, &w);
         size.x = (int32_t)(w.ws_col);
         size.y = (int32_t)(w.ws_row);
+
 #endif // Windows/Linux
+
         return s_Data.consoleSize = size;
     }
 
@@ -49,20 +61,41 @@ namespace Utils
     static void SetCursorPos(const Math::Vec2i& position)
     {
 #if defined(_WIN32)
+
         COORD pos = { (SHORT)position.x, (SHORT)position.y };
         SetConsoleCursorPosition(s_Data.stdOutHandle, pos);
+
 #elif defined(__linux__)
 
 #endif // Windows/Linux
+
+    }
+
+    static void ShowConsoleCursor(bool showFlag)
+    {
+#if defined(_WIN32)
+
+        CONSOLE_CURSOR_INFO     cursorInfo;
+        GetConsoleCursorInfo(s_Data.stdOutHandle, &cursorInfo);
+        cursorInfo.bVisible = showFlag; // set the cursor visibility
+        SetConsoleCursorInfo(s_Data.stdOutHandle, &cursorInfo);
+
+#elif defined(__linux__)
+
+#endif // Windows/Linux
+
     }
 
     static void InitData()
     {
 #if defined(_WIN32)
+
         s_Data.stdOutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
 #elif defined(__linux__)
 
 #endif // Windows/Linux
+
         UpdateConsoleSize();
     }
 }
@@ -74,6 +107,7 @@ namespace Core
         Utils::InitData();
         m_ScreenExtent = Utils::GetConsoleSize();
         UpdateViewSize();
+        OnResize();
     }
     
     Screen::~Screen()
@@ -83,7 +117,9 @@ namespace Core
     void Screen::OnUpdate(float ts)
     {
         m_ScreenExtent = Utils::UpdateConsoleSize();
-        UpdateViewSize();
+        // reset cursor visibility on resize
+        if (UpdateViewSize())
+            OnResize();
     }
 
     void Screen::FlushView()
@@ -92,6 +128,7 @@ namespace Core
         {
             for (int32_t i = 0; i < m_View->GetWidth(); i++)
             {
+                // update the screen only if the character is different
                 if (((*m_View)[i][j]) != ((*m_OldView)[i][j]))
                 {
                     Utils::SetCursorPos({ i, j });
@@ -116,9 +153,20 @@ namespace Core
         return m_View->ScreenSpaceToWorldSpace(vector);
     }
     
-    void Screen::UpdateViewSize()
+    void Screen::OnResize()
     {
-        m_View = std::make_shared<View>(m_ScreenExtent);
+        Utils::ShowConsoleCursor(false);
+    }
+
+    bool Screen::UpdateViewSize()
+    {
+        // (re)create a character buffer
+        if (!m_View || m_ScreenExtent != m_View->GetExtent())
+        {
+            m_View = std::make_shared<View>(m_ScreenExtent);
+            return true;
+        }
+        return false;
     }
     
     View& Screen::PrepareView()

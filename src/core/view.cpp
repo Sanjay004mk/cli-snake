@@ -2,6 +2,7 @@
 
 namespace Utils
 {
+	// t -> (-1, 1)
 	static float LerpN1to1(float t, float v1, float v2)
 	{
 		t = (t + 1.f) / 2.f;
@@ -35,6 +36,7 @@ namespace Core
 			return;
 
 		// cull sprite extent to be inside view
+		// Sprite is flipped, so use opposite extents e.g. `px + sy`
 		int32_t pxmax = std::min(px + sy, m_ViewExtent.x);
 		int32_t pymax = std::min(py + sx, m_ViewExtent.y);
 
@@ -53,22 +55,37 @@ namespace Core
 		return (float)m_ViewExtent.x / (float)m_ViewExtent.y;
 	}
 
+	float View::GetCharWidth() const
+	{
+		float aspect = GetAspectRatio();
+		// 2/x because world space is from -1 to 1
+		return aspect >= 1.f ? (2.f * aspect) / (float)GetWidth() : (2.f / (float)GetWidth());
+	}
+
+	float View::GetCharHeight() const
+	{
+		float aspect = GetAspectRatio();
+		// 2/x because world space is from -1 to 1
+		return aspect < 1.f ? (2.f / aspect) / (float)GetHeight() : (2.f / (float)GetHeight());
+	}
+
 	Math::Vec2i View::WorldSpaceToScreenSpace(const Math::Vec2f& v) const
 	{
-		// convert to (-1, -1) -> (1, 1) 
+		// clamp to (-1, -1) -> (1, 1) 
 		auto vector = v;
 		float aspectRatio = GetAspectRatio();
 		if (aspectRatio > 1.f)
-			vector.x /= aspectRatio;
+			vector.x /= (aspectRatio / 2.f);
 		else
-			vector.y *= aspectRatio;
+			vector.y *= (aspectRatio / 2.f);
 
 		return Math::Vec2i((int32_t)Utils::LerpN1to1(vector.x, 0.f, (float)m_ViewExtent.x), (int32_t)Utils::LerpN1to1(vector.y, 0.f, (float)m_ViewExtent.y));
 	}
 
 	Math::Vec2f View::ScreenSpaceToWorldSpace(const Math::Vec2i& vector) const
 	{
-		float x = ((float)vector.x / (float)m_ViewExtent.x) * 2.f - 1.f, y = ((float)vector.y / (float)m_ViewExtent.y) * 2.f - 1.f;
+		float x = ((float)vector.x / (float)m_ViewExtent.x) * 2.f - 1.f;
+		float y = ((float)vector.y / (float)m_ViewExtent.y) * 2.f - 1.f;
 		return Math::Vec2f(x, y);
 	}
 

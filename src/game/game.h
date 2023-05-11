@@ -15,7 +15,8 @@ namespace Game
 	private:
 		void OnEvent(Core::Event e);
 
-		bool s_Running = true;
+		bool m_Running = true;
 		Core::Screen m_Screen;
+		float m_Delta = 0.f;
 	};
 }

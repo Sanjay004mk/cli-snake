@@ -14,6 +14,7 @@ namespace Core
 			for (auto& d : data)
 				d.resize(size.y);
 		}
+		// construct Sprite with initializer list
 		Sprite(const std::vector<std::vector<char>>& data) : data(data) {}
 
 		std::vector<char>& operator[](int32_t i) { return data[i]; }
@@ -40,6 +41,13 @@ namespace Core
 		const int32_t GetHeight() const { return m_ViewExtent.y; }
 
 		float GetAspectRatio() const;
+
+		// returns the size of one character in x axis
+		float GetCharWidth() const;
+		// returns the size of one character in y axis
+		float GetCharHeight() const;
+		// returns the size of one character 
+		Math::Vec2f GetCharExtent() const { return { GetCharWidth(), GetCharHeight() }; }
 
 		Math::Vec2i WorldSpaceToScreenSpace(const Math::Vec2f& vector) const;
 		Math::Vec2f ScreenSpaceToWorldSpace(const Math::Vec2i& vector) const;

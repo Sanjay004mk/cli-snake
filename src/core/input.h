@@ -22,9 +22,9 @@ namespace Core
 		static void Init();
 		static void Shutdown();
 		static void SetEventCallbackFn(EventCallbackFn fn);
-		static void PollEvents();
+		static void PollEvents(float delta);
 
 	private:
-		static EventCallbackFn callbackFn;
+		static inline EventCallbackFn s_CallbackFn;
 	};
 }

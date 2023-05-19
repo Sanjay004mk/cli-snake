@@ -1,4 +1,4 @@
-#include "screen.h"
+#include "terminal.h"
 
 #include <iostream>
 
@@ -102,7 +102,7 @@ namespace Utils
 
 namespace Core
 {
-    Screen::Screen()
+    Terminal::Terminal()
     {
         Utils::InitData();
         m_ScreenExtent = Utils::GetConsoleSize();
@@ -110,11 +110,11 @@ namespace Core
         OnResize();
     }
     
-    Screen::~Screen()
+    Terminal::~Terminal()
     {
     }
 
-    void Screen::OnUpdate(float ts)
+    void Terminal::OnUpdate(float ts)
     {
         m_ScreenExtent = Utils::UpdateConsoleSize();
         // reset cursor visibility on resize
@@ -122,7 +122,7 @@ namespace Core
             OnResize();
     }
 
-    void Screen::FlushView()
+    void Terminal::FlushView()
     {
         for (int32_t j = 0; j < m_View->GetHeight(); j++)
         {
@@ -138,27 +138,27 @@ namespace Core
         }
     }
     
-    float Screen::GetAspectRatio() const
+    float Terminal::GetAspectRatio() const
     {
         return m_View->GetAspectRatio();
     }
     
-    Math::Vec2i Screen::WorldSpaceToScreenSpace(const Math::Vec2f& v) const
+    Math::Vec2i Terminal::WorldSpaceToScreenSpace(const Math::Vec2f& v) const
     {
         return m_View->WorldSpaceToScreenSpace(v);
     }
 
-    Math::Vec2f Screen::ScreenSpaceToWorldSpace(const Math::Vec2i& vector) const
+    Math::Vec2f Terminal::ScreenSpaceToWorldSpace(const Math::Vec2i& vector) const
     {
         return m_View->ScreenSpaceToWorldSpace(vector);
     }
     
-    void Screen::OnResize()
+    void Terminal::OnResize()
     {
         Utils::ShowConsoleCursor(false);
     }
 
-    bool Screen::UpdateViewSize()
+    bool Terminal::UpdateViewSize()
     {
         // (re)create a character buffer
         if (!m_View || m_ScreenExtent != m_View->GetExtent())
@@ -169,7 +169,7 @@ namespace Core
         return false;
     }
     
-    View& Screen::PrepareView()
+    View& Terminal::PrepareView()
     {
         // store previous buffer so the we can change only the characters
         // that are different to make the experience smooth
@@ -178,7 +178,7 @@ namespace Core
         return *m_View;
     }
     
-    void Screen::ClearScreen()
+    void Terminal::ClearScreen()
     {
         Utils::SetCursorPos({ 0, 0 });
         for (int32_t j = 0; j < m_View->GetHeight(); j++)

@@ -5,11 +5,11 @@
 
 namespace Core
 {
-	class Screen
+	class Terminal
 	{
 	public:
-		Screen();
-		~Screen();
+		Terminal();
+		~Terminal();
 
 		void OnUpdate(float ts);
 		void FlushView();

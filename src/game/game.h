@@ -1,22 +1,13 @@
-#pragma once
-#include "../core/input.h"
-#include "../core/screen.h"
+#include "../core/attachment.h"
 
 namespace Game
 {
-	class GameManager
+	class GameManager : public Core::Attachment
 	{
 	public:
-		GameManager();
-		~GameManager();
-
-		void Run();
+		virtual void OnUpdate(Core::View& view, float delta) override;
+		virtual bool OnEvent(Core::Event e) override;
 
 	private:
-		void OnEvent(Core::Event e);
-
-		bool m_Running = true;
-		Core::Screen m_Screen;
-		float m_Delta = 0.f;
 	};
 }

@@ -144,6 +144,12 @@ namespace Math
 		return true;
 	}
 
+	template <size_t L, typename T, typename U>
+	bool operator!=(const Vector<L, T>& left, const Vector<L, U>& right)
+	{
+		return !(left == right);
+	}
+
 	template <size_t L, typename T>
 	T Dot(const Vector<L, T>& left, const Vector<L, T>& right)
 	{

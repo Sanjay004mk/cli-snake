@@ -11,6 +11,7 @@
 #elif defined(__linux__)
 
 #include <sys/ioctl.h>
+#include <ncurses.h>
 
 #endif // Windows/Linux
 
@@ -66,9 +67,20 @@ namespace Utils
         SetConsoleCursorPosition(s_Data.stdOutHandle, pos);
 
 #elif defined(__linux__)
-
+        move(position.x, position.y);
 #endif // Windows/Linux
 
+    }
+
+    static void PrintPos(char ch, const Math::Vec2i& position)
+    {
+#if defined(_WIN32)
+        Utils::SetCursorPos(position);
+        std::cout << ch;
+
+#elif defined(__linux__)
+        mvprintw(position.y, position.x, "%c", ch);
+#endif // Windows/Linux
     }
 
     static void ShowConsoleCursor(bool showFlag)
@@ -81,7 +93,7 @@ namespace Utils
         SetConsoleCursorInfo(s_Data.stdOutHandle, &cursorInfo);
 
 #elif defined(__linux__)
-
+        curs_set(showFlag);
 #endif // Windows/Linux
 
     }
@@ -94,7 +106,7 @@ namespace Utils
 
 #elif defined(__linux__)
 
-        
+        initscr();        
 
 #endif // Windows/Linux
 
@@ -103,7 +115,12 @@ namespace Utils
 
     static void Shutdown()
     {
+#if defined(_WIN32)
 
+#elif defined(__linux__)
+
+        endwin();
+#endif // Windows/Linux
     }
 }
 
@@ -139,11 +156,15 @@ namespace Core
                 // update the screen only if the character is different
                 if (((*m_View)[i][j]) != ((*m_OldView)[i][j]))
                 {
-                    Utils::SetCursorPos({ i, j });
-                    std::cout << (*m_View)[i][j];
+                    Utils::PrintPos((*m_View)[i][j], {i, j});
                 }
             }
         }
+
+#if defined(__linux__)
+        refresh();
+#endif
+
     }
     
     float Terminal::GetAspectRatio() const

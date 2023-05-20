@@ -8,7 +8,7 @@
 
 #elif defined(__linux__)
 
-#include <sys/ioctl.h>
+#include <ncurses.h>
 
 #endif // Windows/Linux
 
@@ -16,6 +16,10 @@ namespace Core
 {
 	void Input::Init()
 	{
+#if defined(__linux__)
+		nodelay(stdscr, true);
+		keypad(stdscr, true);
+#endif
 	}
 	
 	void Input::Shutdown()
@@ -39,8 +43,12 @@ namespace Core
 
 #elif defined(__linux__)
 
-		if (acc >= 5.f)
-			s_CallbackFn(Event::Escape);
+		auto ch = getch();
+		if (ch != ERR)
+		{
+			if (ch == KEY_BACKSPACE)
+				s_CallbackFn(Event::Escape);
+		}
 
 #endif // Windows/Linux
 

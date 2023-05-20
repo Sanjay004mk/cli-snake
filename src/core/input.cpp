@@ -34,7 +34,7 @@ namespace Core
 
 #if defined(_WIN32)
 
-		if (GetAsyncKeyState(VK_ESCAPE))
+		if (GetAsyncKeyState(VK_BACK))
 			s_CallbackFn(Event::Escape);
 
 #elif defined(__linux__)

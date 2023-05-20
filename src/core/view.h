@@ -2,6 +2,7 @@
 #include "../math/vec.h"
 
 #include <vector>
+#include <string_view>
 
 namespace Core
 {
@@ -27,14 +28,37 @@ namespace Core
 		std::vector<std::vector<char>> data;
 	};
 
+	struct AnimatedSprite
+	{
+		uint32_t fps;
+		uint32_t currentFrame = 0;
+		float time = 0.f;
+		std::vector<Sprite> frames;
+
+		void Reset() { currentFrame = 0; time = 0.f; }
+	};
+
 	class View
 	{
 	public:
 		View(const Math::Vec2i& viewExtent);
 
 		void Clear(char clearChar = ' ');
-		void Draw(const Sprite& sprite, const Math::Vec2i& top_left_position);
-		void Draw(const Sprite& sprite, const Math::Vec2f& world_position);
+
+		void DrawSprite(const Sprite& sprite, const Math::Vec2i& top_left_position);
+		void DrawSprite(const Sprite& sprite, const Math::Vec2f& world_position);
+
+		// returns true when animation is complete
+		bool DrawAnimatedSprite(AnimatedSprite& sprite, const Math::Vec2f& position);
+		bool DrawAnimatedSprite(AnimatedSprite& sprite, const Math::Vec2i& position);
+
+		// broken
+		void DrawLine(const Math::Vec2f& p1, const Math::Vec2f& p2, const Sprite& style = { {{'*'}} });
+		
+		void DrawText(std::string_view text, const Math::Vec2f& position);
+		void DrawText(std::string_view text, const Math::Vec2i& position);
+		void DrawTextCentered(std::string_view text, const Math::Vec2f& position);
+		void DrawTextCentered(std::string_view text, const Math::Vec2i& position);
 
 		const Math::Vec2i& GetExtent() const { return m_ViewExtent; }
 		const int32_t GetWidth() const { return m_ViewExtent.x; }

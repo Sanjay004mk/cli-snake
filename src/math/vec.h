@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <math.h>
 
 namespace Math
 {
@@ -18,12 +19,19 @@ namespace Math
 		};
 
 		Vector() : x(T(0)), y(T(0)) {}
+
+		template <typename U>
+		Vector(U val = U(0)) : x(T(val)), y(T(val)) {}
+
 		template <typename U>
 		Vector(U x, U y) : x(T(x)), y(T(y)) {}
+
+		template <typename U>
+		Vector(const Vector<2, U>& other) : x(T(other.x)), y(T(other.y)) {}
 	};
 
-	template <size_t L, typename T>
-	Vector<L, T> operator+(const Vector<L, T>& left, const Vector<L, T>& right)
+	template <size_t L, typename T, typename U>
+	Vector<L, T> operator+(const Vector<L, T>& left, const Vector<L, U>& right)
 	{
 		Vector<L, T> res;
 		for (size_t i = 0; i < L; i++)
@@ -31,8 +39,8 @@ namespace Math
 		return res;
 	}
 
-	template <size_t L, typename T>
-	Vector<L, T> operator-(const Vector<L, T>& left, const Vector<L, T>& right)
+	template <size_t L, typename T, typename U>
+	Vector<L, T> operator-(const Vector<L, T>& left, const Vector<L, U>& right)
 	{
 		Vector<L, T> res;
 		for (size_t i = 0; i < L; i++)
@@ -40,24 +48,24 @@ namespace Math
 		return res;
 	}
 
-	template <size_t L, typename T>
-	Vector<L, T>& operator+=(Vector<L, T>& res, const Vector<L, T>& other)
+	template <size_t L, typename T, typename U>
+	Vector<L, T>& operator+=(Vector<L, T>& res, const Vector<L, U>& other)
 	{
 		for (size_t i = 0; i < L; i++)
 			res.e[i] += other.e[i];
 		return res;
 	}
 
-	template <size_t L, typename T>
-	Vector<L, T>& operator-=(Vector<L, T>& res, const Vector<L, T>& other)
+	template <size_t L, typename T, typename U>
+	Vector<L, T>& operator-=(Vector<L, T>& res, const Vector<L, U>& other)
 	{
 		for (size_t i = 0; i < L; i++)
 			res.e[i] -= other.e[i];
 		return res;
 	}
 
-	template <size_t L, typename T>
-	Vector<L, T> operator*(const Vector<L, T>& left, const Vector<L, T>& right)
+	template <size_t L, typename T, typename U>
+	Vector<L, T> operator*(const Vector<L, T>& left, const Vector<L, U>& right)
 	{
 		Vector<L, T> res;
 		for (size_t i = 0; i < L; i++)
@@ -74,8 +82,8 @@ namespace Math
 		return res;
 	}
 
-	template <size_t L, typename T>
-	Vector<L, T> operator/(const Vector<L, T>& left, const Vector<L, T>& right)
+	template <size_t L, typename T, typename U>
+	Vector<L, T> operator/(const Vector<L, T>& left, const Vector<L, U>& right)
 	{
 		Vector<L, T> res;
 		for (size_t i = 0; i < L; i++)
@@ -84,7 +92,17 @@ namespace Math
 	}
 
 	template <size_t L, typename T>
-	Vector<L, T>& operator*=(Vector<L, T>& res, const Vector<L, T>& other)
+	Vector<L, T> operator/(const Vector<L, T>& vector, float scalar)
+	{
+		Vector<L, T> res;
+		float r_scalar = 1.f / scalar;
+		for (size_t i = 0; i < L; i++)
+			res.e[i] = vector.e[i] * r_scalar;
+		return res;
+	}
+
+	template <size_t L, typename T, typename U>
+	Vector<L, T>& operator*=(Vector<L, T>& res, const Vector<L, U>& other)
 	{
 		for (size_t i = 0; i < L; i++)
 			res.e[i] *= other.e[i];
@@ -99,8 +117,8 @@ namespace Math
 		return res;
 	}
 
-	template <size_t L, typename T>
-	Vector<L, T>& operator/=(Vector<L, T>& res, const Vector<L, T>& other)
+	template <size_t L, typename T, typename U>
+	Vector<L, T>& operator/=(Vector<L, T>& res, const Vector<L, U>& other)
 	{
 		for (size_t i = 0; i < L; i++)
 			res.e[i] /= other.e[i];
@@ -108,13 +126,49 @@ namespace Math
 	}
 
 	template <size_t L, typename T>
-	bool operator==(const Vector<L, T>& left, const Vector<L, T>& right)
+	Vector<L, T>& operator/=(Vector<L, T>& res, float sc)
+	{
+		float rsc = 1.f / sc;
+		for (size_t i = 0; i < L; i++)
+			res.e[i] *= rsc;
+		return res;
+	}
+
+	template <size_t L, typename T, typename U>
+	bool operator==(const Vector<L, T>& left, const Vector<L, U>& right)
 	{
 		for (size_t i = 0; i < L; i++)
 			if (left.e[i] != right.e[i])
 				return false;
 
 		return true;
+	}
+
+	template <size_t L, typename T>
+	T Dot(const Vector<L, T>& left, const Vector<L, T>& right)
+	{
+		T res = T(0);
+		for (size_t i = 0; i < L; i++)
+			res += left.e[i] * right.e[i];
+		return res;
+	}
+
+	template <size_t L, typename T>
+	T LengthSquared(const Vector<L, T>& v)
+	{
+		return Dot(v, v);
+	}
+
+	template <size_t L, typename T>
+	T Length(const Vector<L, T>& v)
+	{
+		return (T)sqrt(LengthSquared(v));
+	}
+
+	template <size_t L, typename T>
+	Vector<L, T> Normalize(const Vector<L, T>& vector)
+	{
+		return vector / Length(vector);
 	}
 
 	template <typename T>

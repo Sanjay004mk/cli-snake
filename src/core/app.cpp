@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include <chrono>
+#include "time.h"
 
 #include "input.h"
 #include "view.h"
@@ -26,6 +27,8 @@ namespace Core
 		std::chrono::steady_clock::time_point last, now = std::chrono::high_resolution_clock::now();
 		while (m_Running)
 		{
+			Time::OnUpdate(m_Delta);
+
 			last = now;
 
 			m_Terminal.OnUpdate(m_Delta);
@@ -41,6 +44,7 @@ namespace Core
 
 			now = std::chrono::high_resolution_clock::now();
 			m_Delta = std::min(0.33f, std::chrono::duration_cast<std::chrono::microseconds>(now - last).count() * 1e-6f);
+			
 		}
 	}
 

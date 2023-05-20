@@ -11,7 +11,7 @@ namespace Core
 {
 	struct CommandLineArgs
 	{
-		CommandLineArgs(int32_t argc, char** argv) {  }
+		CommandLineArgs(int32_t argc, char** argv) : argc(argc), argv(argv) {  }
 
 		char* operator[](int32_t i) { return argv[i]; }
 

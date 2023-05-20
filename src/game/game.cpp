@@ -21,6 +21,27 @@ namespace Game
 			{'-', '-', '/'}
 		}
 	};
+	
+	static Core::AnimatedSprite loading =
+	{
+		3,
+		0,
+		0.f,
+		{
+			{
+			{{'\\'}}
+			},
+			{
+			{{'|'}}
+			},
+			{
+			{{'/'}}
+			},
+			{
+			{{'-'}}
+			},
+		}
+	};
 
 	void GameManager::OnUpdate(Core::View& view, float delta)
 	{
@@ -34,7 +55,8 @@ namespace Game
 			static const Math::Vec2f dirLeft(-1.f, 0.f);
 			static const Math::Vec2f dirRight(1.f, 0.f);
 
-			view.Draw(player, position);
+			//view.DrawSprite(player, position);
+			view.DrawAnimatedSprite(loading, Math::Vec2f(0.f, 0.f));
 
 			auto e = view.GetCharExtent();
 			position += direction * e * delta * 5.f;

@@ -94,9 +94,16 @@ namespace Utils
 
 #elif defined(__linux__)
 
+        
+
 #endif // Windows/Linux
 
         UpdateConsoleSize();
+    }
+
+    static void Shutdown()
+    {
+
     }
 }
 
@@ -112,6 +119,7 @@ namespace Core
     
     Terminal::~Terminal()
     {
+        Utils::Shutdown();
     }
 
     void Terminal::OnUpdate(float ts)

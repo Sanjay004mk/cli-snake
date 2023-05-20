@@ -17,6 +17,9 @@ workspace "cli_snake"
         staticruntime "off"
         systemversion "latest"
 
+        filter "system:linux"
+            links "ncurses"
+
         filter "configurations:Debug"
             symbols "on"
             runtime "Debug"

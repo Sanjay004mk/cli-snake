@@ -24,7 +24,7 @@ namespace Core
 
 	void Application::Run()
 	{
-		std::chrono::steady_clock::time_point last, now = std::chrono::high_resolution_clock::now();
+		auto last = std::chrono::high_resolution_clock::now(), now = std::chrono::high_resolution_clock::now();
 		while (m_Running)
 		{
 			Time::OnUpdate(m_Delta);

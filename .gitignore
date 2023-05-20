@@ -6,3 +6,5 @@ cli_snake.sln
 cli_snake.vcxproj
 cli_snake.vcxproj.user
 cli_snake.vcxproj.filters
+cli_snake.make
+Makefile

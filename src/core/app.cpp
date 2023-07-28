@@ -40,7 +40,7 @@ namespace Core
 
 			m_Terminal.FlushView();
 
-			Core::Input::PollEvents(m_Delta);
+			Core::Input::PollEvents();
 
 			now = std::chrono::high_resolution_clock::now();
 			m_Delta = std::min(0.33f, std::chrono::duration_cast<std::chrono::microseconds>(now - last).count() * 1e-6f);

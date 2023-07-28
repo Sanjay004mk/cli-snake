@@ -40,6 +40,16 @@ namespace Core
 
 		if (GetAsyncKeyState(VK_BACK))
 			s_CallbackFn(Event::Escape);
+		else if (GetAsyncKeyState(VK_UP))
+			s_CallbackFn(Event::Up);
+		else if (GetAsyncKeyState(VK_DOWN))
+			s_CallbackFn(Event::Down);
+		else if (GetAsyncKeyState(VK_LEFT))
+			s_CallbackFn(Event::Left);
+		else if (GetAsyncKeyState(VK_RIGHT))
+			s_CallbackFn(Event::Right);
+		else if (GetAsyncKeyState(VK_RETURN))
+			s_CallbackFn(Event::Enter);
 
 #elif defined(__linux__)
 

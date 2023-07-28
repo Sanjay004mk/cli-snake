@@ -86,7 +86,9 @@ namespace Core
 	{
 
 #if defined(__linux__)
-		char ch = getch();
+		auto ch = getch();
+		if (ch != ERR)
+			bool press = true;
 #endif // Linux
 
 		for (int i = 0; i < (int)Event::Invalid; i++)

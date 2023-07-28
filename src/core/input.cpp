@@ -33,6 +33,8 @@ namespace Utils
 		case Core::Event::Up:
 			return VK_UP;
 		}
+
+		return 0;
 	}
 
 #elif defined(__linux__)
@@ -53,7 +55,9 @@ namespace Utils
 			return KEY_RIGHT;
 		case Core::Event::Up:
 			return KEY_UP;
-}
+		}
+
+		return 0;
 	}
 
 #endif // Windows/Linux
@@ -80,10 +84,23 @@ namespace Core
 	
 	void Input::PollEvents()
 	{
+
+#if defined(__linux__)
+		char ch = getch();
+#endif // Linux
+
 		for (int i = 0; i < (int)Event::Invalid; i++)
 		{
+			bool pressed = false;
+
+#if defined(_WIN32)
 			int vkc = Utils::GetVKC((Event)i);
-			if (GetAsyncKeyState(vkc))
+			pressed = GetAsyncKeyState(vkc);
+#elif defined(__linux__)
+			pressed = ch == Utils::GetVKC((Event)i);
+#endif // Windows/Linux
+			
+			if (pressed)
 			{
 				if (!s_InEvent[i])
 				{

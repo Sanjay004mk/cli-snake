@@ -31,11 +31,9 @@ namespace Core
 		s_CallbackFn = fn;
 	}
 	
-	void Input::PollEvents(float delta)
+	void Input::PollEvents()
 	{
-		static float acc = 0.f;
-		acc += delta;
-
+		
 #if defined(_WIN32)
 
 		if (GetAsyncKeyState(VK_BACK))
@@ -48,6 +46,16 @@ namespace Core
 		{
 			if (ch == KEY_BACKSPACE)
 				s_CallbackFn(Event::Escape);
+			else if (ch == KEY_UP || ch == 'w')
+				s_CallbackFn(Event::Up);
+			else if (ch == KEY_DOWN || ch == 's')
+				s_CallbackFn(Event::Down);
+			else if (ch == KEY_LEFT || ch == 'a')
+				s_CallbackFn(Event::Left);
+			else if (ch == KEY_RIGHT || ch == 'd')
+				s_CallbackFn(Event::Right);
+			else if (ch == KEY_ENTER)
+				s_CallbackFn(Event::Enter);
 		}
 
 #endif // Windows/Linux

@@ -5,13 +5,13 @@ namespace Core
 {
 	enum class Event
 	{
-		Invalid = 0,
 		Up,
 		Down,
 		Left,
 		Right,
 		Enter,
 		Escape,
+		Invalid,
 	};
 
 	class Input
@@ -26,5 +26,6 @@ namespace Core
 
 	private:
 		static inline EventCallbackFn s_CallbackFn;
+		static inline bool s_InEvent[(int)Event::Invalid];
 	};
 }

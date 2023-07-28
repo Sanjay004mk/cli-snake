@@ -22,6 +22,15 @@ namespace Game
 
 	class MainMenu : public Level
 	{
+		enum class Option
+		{
+			StartGame = 0,
+			Quit,
+			LevelSelect,
+
+			Invalid
+		};
+
 	public:
 		MainMenu();
 		~MainMenu();
@@ -30,6 +39,10 @@ namespace Game
 		virtual void FillView(Core::View* pView) override;
 
 	private:
+		std::string GetText(Option option);
+
+		Option mOption = Option::StartGame;
+		
 	};
 
 	class DefaultMap : public Level

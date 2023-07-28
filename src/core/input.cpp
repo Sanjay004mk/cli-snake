@@ -12,6 +12,53 @@
 
 #endif // Windows/Linux
 
+namespace Utils
+{
+#if defined(_WIN32)
+	
+	int GetVKC(Core::Event e)
+	{
+		switch (e)
+		{
+		case Core::Event::Escape:
+			return VK_BACK;
+		case Core::Event::Enter:
+			return VK_RETURN;
+		case Core::Event::Down:
+			return VK_DOWN;
+		case Core::Event::Left:
+			return VK_LEFT;
+		case Core::Event::Right:
+			return VK_RIGHT;
+		case Core::Event::Up:
+			return VK_UP;
+		}
+	}
+
+#elif defined(__linux__)
+
+	int GetVKC(Core::Event e)
+	{
+		switch (e)
+		{
+		case Core::Event::Escape:
+			return KEY_BACKSPACE;
+		case Core::Event::Enter:
+			return KEY_ENTER;
+		case Core::Event::Down:
+			return KEY_DOWN;
+		case Core::Event::Left:
+			return KEY_LEFT;
+		case Core::Event::Right:
+			return KEY_RIGHT;
+		case Core::Event::Up:
+			return KEY_UP;
+}
+	}
+
+#endif // Windows/Linux
+}
+
 namespace Core
 {
 	void Input::Init()
@@ -33,42 +80,19 @@ namespace Core
 	
 	void Input::PollEvents()
 	{
-		
-#if defined(_WIN32)
-
-		if (GetAsyncKeyState(VK_BACK))
-			s_CallbackFn(Event::Escape);
-		else if (GetAsyncKeyState(VK_UP))
-			s_CallbackFn(Event::Up);
-		else if (GetAsyncKeyState(VK_DOWN))
-			s_CallbackFn(Event::Down);
-		else if (GetAsyncKeyState(VK_LEFT))
-			s_CallbackFn(Event::Left);
-		else if (GetAsyncKeyState(VK_RIGHT))
-			s_CallbackFn(Event::Right);
-		else if (GetAsyncKeyState(VK_RETURN))
-			s_CallbackFn(Event::Enter);
-
-#elif defined(__linux__)
-
-		auto ch = getch();
-		if (ch != ERR)
+		for (int i = 0; i < (int)Event::Invalid; i++)
 		{
-			if (ch == KEY_BACKSPACE)
-				s_CallbackFn(Event::Escape);
-			else if (ch == KEY_UP || ch == 'w')
-				s_CallbackFn(Event::Up);
-			else if (ch == KEY_DOWN || ch == 's')
-				s_CallbackFn(Event::Down);
-			else if (ch == KEY_LEFT || ch == 'a')
-				s_CallbackFn(Event::Left);
-			else if (ch == KEY_RIGHT || ch == 'd')
-				s_CallbackFn(Event::Right);
-			else if (ch == KEY_ENTER)
-				s_CallbackFn(Event::Enter);
+			int vkc = Utils::GetVKC((Event)i);
+			if (GetAsyncKeyState(vkc))
+			{
+				if (!s_InEvent[i])
+				{
+					s_CallbackFn((Event)i);
+					s_InEvent[i] = true;
+				}
+			}
+			else
+				s_InEvent[i] = false;
 		}
-
-#endif // Windows/Linux
-
 	}
 }

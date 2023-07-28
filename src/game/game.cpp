@@ -43,10 +43,19 @@ namespace Game
 		}
 	};
 
+	GameManager::GameManager()
+	{
+		mLevel = std::make_unique<MainMenu>();
+	}
+
+	GameManager::~GameManager()
+	{
+	}
+
 	void GameManager::OnUpdate(Core::View& view, float delta)
 	{
 		// tmp
-		{
+		/*{
 			static Math::Vec2f position = { -1.f, -1.f };
 			static Math::Vec2f direction = { 1.f, 0.f };
 
@@ -69,7 +78,9 @@ namespace Game
 			if (position.y <= -1.f && direction == dirUp)
 				direction = dirRight;
 
-		}
+		}*/
+
+		mLevel->FillView(&view);
 	}
 
 	bool GameManager::OnEvent(Core::Event e)
@@ -79,6 +90,8 @@ namespace Game
 			Core::Application::Get().Close();
 			return true;
 		}
+		mLevel->OnEvent(e);
+
 		return false;
 	}
 }

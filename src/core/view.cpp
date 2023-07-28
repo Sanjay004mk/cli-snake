@@ -13,6 +13,18 @@ namespace Utils
 
 namespace Core
 {
+	Sprite::Sprite(const std::vector<const char*>& inData)
+	{
+		data.resize(inData.size());
+		for (size_t i = 0; i < data.size(); i++)
+		{
+			auto& d = data[i];
+			auto& id = inData[i];
+			std::string_view str = id;
+			d = std::vector<char>(str.data(), str.data() + str.size());
+		}
+	}
+
 	View::View(const Math::Vec2i& viewExtent) 
 		: m_ViewExtent(viewExtent)
 	{

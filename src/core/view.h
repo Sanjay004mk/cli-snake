@@ -8,15 +8,8 @@ namespace Core
 {
 	struct Sprite
 	{
-		// size must always be greater than (0, 0)
-		Sprite(const Math::Vec2i& size) 
-		{
-			data.resize(size.x);
-			for (auto& d : data)
-				d.resize(size.y);
-		}
-		// construct Sprite with initializer list
-		Sprite(const std::vector<std::vector<char>>& data) : data(data) {}
+		// construct Sprite with initializer list of strings
+		Sprite(const std::vector<const char*>& data);
 
 		std::vector<char>& operator[](int32_t i) { return data[i]; }
 		const std::vector<char>& operator[](int32_t i) const { return data[i]; }
@@ -53,7 +46,7 @@ namespace Core
 		bool DrawAnimatedSprite(AnimatedSprite& sprite, const Math::Vec2i& position);
 
 		// broken
-		void DrawLine(const Math::Vec2f& p1, const Math::Vec2f& p2, const Sprite& style = { {{'*'}} });
+		void DrawLine(const Math::Vec2f& p1, const Math::Vec2f& p2, const Sprite& style = { {"*"} });
 		
 		void DrawText(std::string_view text, const Math::Vec2f& position);
 		void DrawText(std::string_view text, const Math::Vec2i& position);

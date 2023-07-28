@@ -17,8 +17,8 @@ namespace Game
 	// temp
 	static Core::Sprite player = {
 		{
-			{'-', '*', '0'},
-			{'-', '-', '/'}
+			"--0",
+			"-*="
 		}
 	};
 	
@@ -29,16 +29,16 @@ namespace Game
 		0.f,
 		{
 			{
-			{{'\\'}}
+			{"\\"}
 			},
 			{
-			{{'|'}}
+			{"|"}
 			},
 			{
-			{{'/'}}
+			{"/"}
 			},
 			{
-			{{'-'}}
+			{"-"}
 			},
 		}
 	};
@@ -55,7 +55,7 @@ namespace Game
 			static const Math::Vec2f dirLeft(-1.f, 0.f);
 			static const Math::Vec2f dirRight(1.f, 0.f);
 
-			//view.DrawSprite(player, position);
+			view.DrawSprite(player, position);
 			view.DrawAnimatedSprite(loading, Math::Vec2f(0.f, 0.f));
 
 			auto e = view.GetCharExtent();

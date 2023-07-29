@@ -1,12 +1,20 @@
 #include <functional>
 
+#include "../core/app.h"
+
 #include "level.h"
+#include "game.h"
 
 namespace Utils
 {
 	static bool CheckSize(const Core::View& view, const Math::Vec2i& minSize)
 	{
 		return (view.GetWidth() < minSize.x || view.GetHeight() < minSize.y);
+	}
+
+	static bool InBound(const Math::Vec2i& vec, const Math::Vec2i& bound)
+	{
+		return (vec.x < bound.x && vec.y < bound.y);
 	}
 }
 
@@ -20,7 +28,7 @@ namespace Game
 	{
 	}
 
-	void MainMenu::OnEvent(Core::Event e)
+	bool MainMenu::OnEvent(Core::Event e)
 	{
 		switch (e)
 		{
@@ -30,7 +38,24 @@ namespace Game
 		case Core::Event::Up:
 			mSelectedOption = (Option)(((int)mSelectedOption - 1) < 0 ? ((int)Option::Invalid - 1) : ((int)mSelectedOption - 1));
 			break;
+
+		case Core::Event::Enter:
+		{
+			if (mSelectedOption == Option::Quit)
+			{
+				Core::Application::Get().Close();
+			}
+			else
+			{
+				// start game
+				return true;
+			}
+
+			break;
 		}
+		}
+
+		return false;
 	}
 
 	void MainMenu::FillView(Core::View* pView)
@@ -140,6 +165,14 @@ namespace Game
 		}
 	}
 
+	std::function<void(GameManager*)> MainMenu::GetEventElevatedFn()
+	{
+		return [](GameManager* gm)
+		{
+			gm->level = std::make_unique<DefaultMap>();
+		};
+	}
+
 	std::string_view MainMenu::GetText(Option option)
 	{
 		switch (option)
@@ -156,18 +189,162 @@ namespace Game
 	}
 	
 	DefaultMap::DefaultMap()
+		: levelExtent(Core::Application::Get().GetTerminal().GetScreenExtent())
 	{
+		auto& head = mSnake.Head();
+		head = { levelExtent.x / 2, levelExtent.y / 2 };
+
+		RelocateFruit();
 	}
 	
 	DefaultMap::~DefaultMap()
 	{
 	}
 	
-	void DefaultMap::OnEvent(Core::Event e)
+	void DefaultMap::OnUpdate(float delta)
 	{
+		if (!Utils::InBound(mFruitPos, levelExtent))
+			RelocateFruit();
+
+		float speed = levelExtent.y / mFullDuration;
+
+		static float acc = 0.f;
+		acc += delta;
+		if (acc * speed > 1.f)
+		{
+			acc = 0.f;
+			mOldDirection = mNewDirection;
+			if (mSnake.Move(mNewDirection))
+			{
+				mGameOver = true;
+				return;
+			}
+
+			auto& snakeHead = mSnake.Head();
+
+			// bounds checking
+			if (snakeHead.x < 0)
+				snakeHead.x = levelExtent.x - 1;
+			else if (snakeHead.x >= levelExtent.x)
+				snakeHead.x = 0;
+			else if (snakeHead.y < 0)
+				snakeHead.y = levelExtent.y - 1;
+			else if (snakeHead.y >= levelExtent.y)
+				snakeHead.y = 0;
+
+			// fruit checking
+			if (snakeHead == mFruitPos)
+			{
+				mSnake.Grow();
+				RelocateFruit();
+			}
+		}
+
+	}
+
+	bool DefaultMap::OnEvent(Core::Event e)
+	{
+		static const Math::Vec2i directions[4] =
+		{
+			{  0,  1 }, // 0 -> down
+			{  0, -1 }, // 1 -> up
+			{  1,  0 }, // 2 -> right
+			{ -1,  0 }  // 3 -> left
+		};
+
+		// return to main menu after pressing any key
+		if (mGameOver)
+			return true;
+
+		switch (e)
+		{
+		case Core::Event::Down:
+			if (mOldDirection != directions[1])
+				mNewDirection = { 0, 1 };
+			break;
+		case Core::Event::Up:
+			if (mOldDirection != directions[0])
+				mNewDirection = { 0, -1 };
+			break;
+		case Core::Event::Right:
+			if (mOldDirection != directions[3])
+				mNewDirection = { 1, 0 };
+			break;
+		case Core::Event::Left:
+			if (mOldDirection != directions[2])
+				mNewDirection = { -1, 0 };
+			break;
+		case Core::Event::Escape:
+			return true;
+		}
+
+		return false;
 	}
 	
 	void DefaultMap::FillView(Core::View* pView)
 	{
+		if (mGameOver)
+		{
+			pView->DrawTextCentered("Game Over!", Math::Vec2f(0.f, -0.1f));
+
+			auto score = "Score: " + std::to_string(mSnake.body.size());
+			pView->DrawTextCentered(score, Math::Vec2f(0.f, 0.f));
+
+			pView->DrawTextCentered("Press any key to return to Main Menu", Math::Vec2f(0.f, 0.2f));
+
+			return;
+		}
+
+		levelExtent = pView->GetExtent();
+
+		// body
+		for (auto it = mSnake.body.begin() + 1; it != mSnake.body.end(); it++)
+			pView->DrawSprite({ {"#"} }, *it);
+
+		// fruit
+		pView->DrawSprite({ {"F"} }, mFruitPos);
+
+		// head
+		Core::Sprite head = { {" "} };
+
+		// change head sprite based on direction
+		if (mOldDirection.x == 1)
+			head.data[0][0] = '>';
+		else if (mOldDirection.x == -1)
+			head.data[0][0] = '<';
+		else if (mOldDirection.y == 1)
+			head.data[0][0] = 'v';
+		else if (mOldDirection.y == -1)
+			head.data[0][0] = '^';
+
+		pView->DrawSprite(head, mSnake.Head());
+	}
+
+	std::function<void(GameManager*)> DefaultMap::GetEventElevatedFn()
+	{
+		return [](GameManager* gm)
+		{
+			gm->level = std::make_unique<MainMenu>();
+		};
+	}
+
+	void DefaultMap::RelocateFruit()
+	{
+		while (true)
+		{
+			bool conflict = false;
+			
+			mFruitPos = Math::RandVec2<int32_t>(0, levelExtent.x - 1, 0, levelExtent.y - 1);
+
+			for (auto& pos : mSnake.body)
+				if (pos == mFruitPos)
+				{
+					conflict = true;
+					break;
+				}
+			
+			if (!conflict)
+				break;
+		}
 	}
 }

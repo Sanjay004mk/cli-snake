@@ -12,7 +12,7 @@ namespace Game
 		virtual void OnUpdate(Core::View& view, float delta) override;
 		virtual bool OnEvent(Core::Event e) override;
 
+		std::unique_ptr<Level> level;
 	private:
-		std::unique_ptr<Level> mLevel;
 	};
 }

@@ -16,7 +16,7 @@ namespace Game
 {	
 	GameManager::GameManager()
 	{
-		mLevel = std::make_unique<MainMenu>();
+		level = std::make_unique<MainMenu>();
 	}
 
 	GameManager::~GameManager()
@@ -51,17 +51,23 @@ namespace Game
 
 		}*/
 
-		mLevel->FillView(&view);
+		level->OnUpdate(delta);
+		level->FillView(&view);
 	}
 
 	bool GameManager::OnEvent(Core::Event e)
 	{
-		if (e == Core::Event::Escape)
+		/*if (e == Core::Event::Escape)
 		{
 			Core::Application::Get().Close();
 			return true;
+		}*/
+		
+		if (level->OnEvent(e))
+		{
+			auto fn = level->GetEventElevatedFn();
+			fn(this);
 		}
-		mLevel->OnEvent(e);
 
 		return false;
 	}

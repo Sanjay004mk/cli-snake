@@ -30,6 +30,8 @@ namespace Core
 
 		void AddAttachment(std::shared_ptr<Attachment> attachment);
 
+		const Core::Terminal& GetTerminal() const { return m_Terminal; }
+
 		static Application& Get() { return *s_Instance; }
 
 	private:

@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <math.h>
 
+#include <random>
+#include <typeinfo>
+
 namespace Math
 {
 	template <size_t L, typename T>
@@ -203,6 +206,28 @@ namespace Math
 		stream << vector.e[L - 1] << ")";
 
 		return stream;
+	}
+
+	inline std::random_device dev;
+	inline std::mt19937 rng(dev());
+
+	template <typename T>
+	Vector<2, T> RandVec2(T xmin = std::numeric_limits<T>::min(), T xmax = std::numeric_limits<T>::max(),
+						 T ymin = std::numeric_limits<T>::min(), T ymax = std::numeric_limits<T>::max())
+	{
+		if constexpr (std::is_same<T, float>::value || std::is_same<T, double>::value)
+		{
+			std::uniform_real_distribution<T> distx(xmin, xmax);
+			std::uniform_real_distribution<T> disty(ymin, ymax);
+			return { distx(rng), disty(rng) };
+		}
+		else
+		{
+			std::uniform_int_distribution<T> distx(xmin, xmax);
+			std::uniform_int_distribution<T> disty(ymin, ymax);
+			return { distx(rng), disty(rng) };
+		}
+
 	}
 
 	using Vec2f = Vector<2, float>;

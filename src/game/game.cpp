@@ -13,36 +13,7 @@ namespace Core
 }
 
 namespace Game
-{
-	// temp
-	static Core::Sprite player = {
-		{
-			"--0",
-			"-*="
-		}
-	};
-	
-	static Core::AnimatedSprite loading =
-	{
-		3,
-		0,
-		0.f,
-		{
-			{
-			{"\\"}
-			},
-			{
-			{"|"}
-			},
-			{
-			{"/"}
-			},
-			{
-			{"-"}
-			},
-		}
-	};
-
+{	
 	GameManager::GameManager()
 	{
 		mLevel = std::make_unique<MainMenu>();

@@ -25,8 +25,8 @@ namespace Game
 		enum class Option
 		{
 			StartGame = 0,
-			Quit,
 			LevelSelect,
+			Quit,
 
 			Invalid
 		};
@@ -39,9 +39,9 @@ namespace Game
 		virtual void FillView(Core::View* pView) override;
 
 	private:
-		std::string GetText(Option option);
+		std::string_view GetText(Option option);
 
-		Option mOption = Option::StartGame;
+		Option mSelectedOption = Option::StartGame;
 		
 	};
 

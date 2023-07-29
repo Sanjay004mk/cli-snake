@@ -16,7 +16,7 @@ namespace Utils
 {
 #if defined(_WIN32)
 	
-	int GetVKC(Core::Event e)
+	static int GetVKC(Core::Event e)
 	{
 		switch (e)
 		{
@@ -39,7 +39,7 @@ namespace Utils
 
 #elif defined(__linux__)
 
-	int GetVKC(Core::Event e)
+	static int GetVKC(Core::Event e)
 	{
 		switch (e)
 		{

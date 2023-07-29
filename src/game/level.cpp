@@ -302,7 +302,7 @@ namespace Game
 			pView->DrawSprite({ {"#"} }, *it);
 
 		// fruit
-		pView->DrawSprite({ {"F"} }, mFruitPos);
+		pView->DrawSprite({ {"+"} }, mFruitPos);
 
 		// head
 		Core::Sprite head = { {" "} };

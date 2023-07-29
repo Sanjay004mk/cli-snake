@@ -86,9 +86,14 @@ namespace Core
 	{
 
 #if defined(__linux__)
-		auto ch = getch();
+		int32_t ch = getch();
 		if (ch != ERR)
+		{
 			bool press = true;
+			if (ch == '\n')
+				ch = KEY_ENTER;
+		}	
+			
 #endif // Linux
 
 		for (int i = 0; i < (int)Event::Invalid; i++)
